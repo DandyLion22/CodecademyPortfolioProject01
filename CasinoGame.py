@@ -118,3 +118,8 @@ class Blackjack:
     
     print("testtesttest")
     print("testestesttest")
+
+
+    print("another text right there")
+
+    

@@ -116,3 +116,5 @@ class Blackjack:
         random.shuffle(self.deck)
 
     
+    print("testtesttest")
+    print("testestesttest")

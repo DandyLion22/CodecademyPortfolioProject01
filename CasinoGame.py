@@ -188,6 +188,26 @@ class Roulette:
     def choose_bet_type(self):
         bet_type = input("Please enter your bet type: ")
         if bet_type in self.bet_types:
+            if bet_type == "Straight":
+                self.straight_bet()
+            elif bet_type == "Split":
+                self.split_bet()
+            elif bet_type == "Street":
+                self.street_bet()
+            elif bet_type == "Corner":
+                self.corner_bet()
+            elif bet_type == "Six Line":
+                self.six_line_bet()
+            elif bet_type == "Column":
+                self.column_bet()
+            elif bet_type == "Dozen":
+                self.dozen_bet()
+            elif bet_type == "Red/Black":
+                self.red_black_bet()
+            elif bet_type == "Even/Odd":
+                self.even_odd_bet()
+            elif bet_type == "Low/High":
+                self.low_high_bet()
             return bet_type
         else:
             print("Invalid bet type")

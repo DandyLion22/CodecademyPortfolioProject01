@@ -178,7 +178,8 @@ class Roulette:
     "Red/Black": "Bet on whether the ball will land on a red or black number.",
     "Low/High": "Bet on whether the ball will land on a low (1-18) or high (19-36) number."
 }
-        
+
+
     def __repr__(self):
         return "Welcome to Roulette!"
     
@@ -434,7 +435,12 @@ class Roulette:
         bet_amount = player.bet()
         bet_type = self.choose_bet_type()
         self.spin_wheel()
-        print(f"The winning number is {self.winning_number}")
+
+        # Print the winning number with a frame around it
+        print(f"╔══════╗")
+        print(f"║  {self.winning_number:02d} ║")
+        print(f"╚══════╝")
+
         self.payout(player, bet_amount, bet_type)
 
 

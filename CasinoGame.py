@@ -437,3 +437,75 @@ class Roulette:
         print(f"The winning number is {self.winning_number}")
         self.payout(player, bet_amount, bet_type)
 
+
+
+class SlotMachine:
+
+    def __init__(self):
+
+        self.slot_grid = [
+            [],
+            [],
+            []
+        ]
+
+    def __repr__(self):
+        return "Welcome to the Slot Machine!"
+    
+    def pulling_the_lever(self):
+        for i in range(3):
+            self.slot_grid[i] = [random.randint(0, 9) for _ in range(3)]
+        return self.slot_grid
+
+    def ask_bet_amount(self, player):
+        while True:
+            print(f"You can bet up to {player.balance}")
+            bet_amount = input("Enter your bet amount: ")
+            if bet_amount.isdigit() and 0 < int(bet_amount) <= player.balance:
+                return int(bet_amount)
+            else:
+                print("Invalid input. Please enter a positive number up to your current balance.")
+
+    def display_slot_grid(self):
+        for row in self.slot_grid:
+            print("+---+---+---+")
+            print("|", end="")
+            for num in row:
+                print(f" {num} |", end="")
+            print()
+        print("+---+---+---+")
+
+    def pulling_the_lever(self, player, bet_amount):
+        for i in range(3):
+            self.slot_grid[i] = [random.randint(0, 9) for _ in range(3)]
+        self.display_slot_grid()
+        if self.payout(player, bet_amount):
+            print("Congratulations, you won!")
+        return self.slot_grid
+    
+    def payout(self, player, bet_amount):
+        # Check for horizontal wins
+        for row in self.slot_grid:
+            if len(set(row)) == 1:
+                player.balance += bet_amount * 10
+                return True
+
+        # Check for diagonal wins
+        if self.slot_grid[0][0] == self.slot_grid[1][1] == self.slot_grid[2][2] or \
+           self.slot_grid[0][2] == self.slot_grid[1][1] == self.slot_grid[2][0]:
+            player.balance += bet_amount * 10
+            return True
+
+        return False
+    
+    def game_loop(self, player):
+        bet_amount = self.ask_bet_amount(player)
+        while True:
+            self.pulling_the_lever(player, bet_amount)
+            print("1. Spin again")
+            print("2. Change bet amount")
+            command = input("Enter a command by typing \"1\" or \"2\": ")
+            if command == "2":
+                bet_amount = self.ask_bet_amount(player)
+            elif command == "1":
+                continue

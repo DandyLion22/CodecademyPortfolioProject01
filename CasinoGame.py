@@ -94,6 +94,11 @@ class Blackjack:
         card = self.deck.pop()
         player.add_card(card)
         print(f"{player.name} drew a {card}")
+        print(f"######")
+        print(f"# {self.winning_number:02d} #")
+        print(f"######")
+        print(f"######")
+        print(f"######")
 
     def player_choice(self, player):
         choice = input(f"{player.name}, do you want to draw another card? (yes/no) ")
@@ -104,10 +109,32 @@ class Blackjack:
         while self.player_choice(player) and player.calculate_hand() < 21:
             self.deal_card(player)
             print(f"{player.name}'s hand: {player.hand}, total: {player.calculate_hand()}")
+            for card in player.hand:
+                print(f"######  ", end='')
+            print()
+            for card in player.hand:
+                print(f"# {card:02d} #  ", end='')
+                print(f"######  ", end='')
+            print()
+            for card in player.hand:
+                print(f"######  ", end='')
+                print(f"######  ", end='')
+            print()
 
         while bank.calculate_hand() < 17:
             self.deal_card(bank)
             print(f"Bank's hand: {bank.hand}, total: {bank.calculate_hand()}")
+            for card in bank.hand:
+                print(f"######  ", end='')
+            print()
+            for card in bank.hand:
+                print(f"# {card:02d} #  ", end='')
+                print(f"######  ", end='')
+            print()
+            for card in bank.hand:
+                print(f"######  ", end='')
+                print(f"######  ", end='')
+            print()
 
         self.payout(player, bank, bet_amount)
         self.reset(player, bank)

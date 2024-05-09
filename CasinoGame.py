@@ -3,24 +3,24 @@ import random
 
 class Games:
     
-    def __init__(self, name, entry_fee):
+    def __init__(self, name):
         self.name = name
-        self.entry_fee = entry_fee
         self.games = {}
     
     def __repr__(self):
         return "There are currently {games} different games to choose from.".format(games = len(self.games))
     
-    def add_game(self, game_name, game_class):
-        self.games[game_name] = game_class
+    def add_game(self, game_name, game_class, *args):
+        self.games[game_name] = (game_class, args)
 
     def get_available_games(self):
         return list(self.games.keys())
     
     def play_game(self, game_name, player):
         if game_name in self.games:
-            game = self.games[game_name]
-            game.play(player)
+            game_class, args = self.games[game_name]
+            game = game_class()
+            game.play(player, *args)
         else:
             print("Sorry, that game is not available.")
 
@@ -42,8 +42,8 @@ class Player:
         if self.is_broke:
             status_broke = "is broke."
         else:
-            status_broke = "is not broke."
-        return "Player {name} has {wealth} in his pocket remaining and {status} His risk aversity is: {risk_aversity}.".format(name=self.name, wealth=self.wealth, status=status_broke, risk_aversity=self.risk_aversity)
+            status_broke = "not (yet) broke."
+        return "Your name is {name}, you have {wealth}$ in your pocket remaining and therefore considered {status}. Your risk aversity is: {risk_aversity}.".format(name=self.name, wealth=self.wealth, status=status_broke, risk_aversity=self.risk_aversity)
     
     def add_card(self, card):
         self.hand.append(card)
@@ -77,6 +77,7 @@ class Blackjack:
     def payout(self, player, bank, bet_amount):
         player_total = player.calculate_hand()
         bank_total = bank.calculate_hand()
+        initial_wealth = player.wealth + bet_amount
 
         if player_total > 21 or (bank_total <= 21 and bank_total > player_total):
             print(f"{player.name} loses the bet.")
@@ -89,55 +90,117 @@ class Blackjack:
         else:  # It's a tie
             print("It's a tie.")
             player.wealth += bet_amount  # Return the bet amount
+
+        winnings = player.wealth - initial_wealth
+        if winnings > 0:
+            print(f"{player.name} won {format(winnings, '.2f')}$ in this round.")
+        elif winnings < 0:
+            print(f"{player.name} lost {format(-winnings, '.2f')}$ in this round.")
+        else:
+            print(f"{player.name} didn't win or lose money in this round.")
+        print(f"{player.name}'s current balance is {format(player.wealth, '.2f')}$.")
     
     def deal_card(self, player):
-        card = self.deck.pop()
-        player.add_card(card)
-        print(f"{player.name} drew a {card}")
-        print(f"######")
-        print(f"# {self.winning_number:02d} #")
-        print(f"######")
-        print(f"######")
-        print(f"######")
+        card = self.deck.pop() 
+        player.hand.append(card)
+        card_str = f"######\n# {card:02d} #\n######\n######\n######"
+        return card_str
+
+    def print_hand(self, player):
+        hand_str = ", ".join([str(card) if card != 11 or sum(player.hand) <= 21 else f"{card}(1)" for card in player.hand])
+        print(f"{player.name}'s hand: [{hand_str}], total: {player.calculate_hand()}")
+
+    def print_rules(self):
+        print("Here are the rules:")
+        print("1. You are competing against the bank. The goal is to get as close to 21 as possible without going over.")
+        print("2. You start with two cards and can choose to draw more.")
+        print("3. The bank will draw cards until it has at least 17.")
+        print("4. If you go over 21, or if the bank gets closer to 21 than you without going over, you lose.")
+        print("5. If you get 21 exactly (Blackjack!), or if the bank goes over 21, you win.")
+        print("6. If neither you nor the bank gets 21, the one closest to 21 wins.")
+        print("7. REMEMBER: An Ace can be treated as either the value of 1 or 11!")
 
     def player_choice(self, player):
         choice = input(f"{player.name}, do you want to draw another card? (yes/no) ")
         return choice.lower() == "yes"
        
     def play(self, player, bank):
-        bet_amount = player.bet()
-        while self.player_choice(player) and player.calculate_hand() < 21:
-            self.deal_card(player)
-            print(f"{player.name}'s hand: {player.hand}, total: {player.calculate_hand()}")
-            for card in player.hand:
-                print(f"######  ", end='')
-            print()
-            for card in player.hand:
-                print(f"# {card:02d} #  ", end='')
-                print(f"######  ", end='')
-            print()
-            for card in player.hand:
-                print(f"######  ", end='')
-                print(f"######  ", end='')
-            print()
+        self.print_rules()
+        while True:
+            start_game = input("Do you want to start the game and draw two cards? (yes/no): ")
+            if start_game.lower() == "yes":
+                # Deal initial cards
+                self.deal_card(player)
+                self.deal_card(player)
+                self.deal_card(bank)
+                self.deal_card(bank)
 
-        while bank.calculate_hand() < 17:
-            self.deal_card(bank)
-            print(f"Bank's hand: {bank.hand}, total: {bank.calculate_hand()}")
-            for card in bank.hand:
-                print(f"######  ", end='')
-            print()
-            for card in bank.hand:
-                print(f"# {card:02d} #  ", end='')
-                print(f"######  ", end='')
-            print()
-            for card in bank.hand:
-                print(f"######  ", end='')
-                print(f"######  ", end='')
-            print()
+                # Print player's and bank's cards
+                print(f"{player.name} drew the following cards:")
+                for i in range(5):  # Assuming each card has 5 lines
+                    for card in player.hand:
+                        if i == 2:  # The line with the card number
+                            print(f"# {card:02d} #  ", end='')
+                        else:
+                            print("######  ", end='')
+                    print()
+                print("\n")  # Print a large space
+                print("Bank drew the following cards:")
+                for i in range(5):  # Assuming each card has 5 lines
+                    for card in bank.hand:
+                        if i == 2:  # The line with the card number
+                            print(f"# {card:02d} #  ", end='')
+                        else:
+                            print("######  ", end='')
+                    print()
 
-        self.payout(player, bank, bet_amount)
-        self.reset(player, bank)
+                bet_amount = player.bet()
+                outcome = None # Variable to keep track of the game's outcome
+                while self.player_choice(player):
+                    self.deal_card(player)
+                    self.print_hand(player)
+                    for i in range(5):  # Assuming each card has 5 lines
+                        for card in player.hand:
+                            if i == 2:  # The line with the card number
+                                print(f"# {card:02d} #  ", end='')
+                            else:
+                                print("######  ", end='')
+                        print()
+                    if player.calculate_hand() > 21:
+                        print(f"{player.name} is overbought!")
+                        outcome = 'overbought'
+                        break
+                    elif player.calculate_hand() == 21:
+                        print(f"{player.name} has a Blackjack!")
+                        outcome = 'blackjack'
+                        break
+                    elif bank.calculate_hand() >= 17 and player.calculate_hand() > bank.calculate_hand():
+                        print(f"{player.name} wins!")
+                        outcome = 'win'
+                        break
+            
+                if outcome is None:
+                    while bank.calculate_hand() < 17:
+                        self.deal_card(bank)
+                        print(f"Bank's hand: {bank.hand}, total: {bank.calculate_hand()}")
+                        for i in range(5):  # Assuming each card has 5 lines
+                            for card in bank.hand:
+                                if i == 2:  # The line with the card number
+                                    print(f"# {card:02d} #  ", end='')
+                                else:
+                                    print("######  ", end='')
+                            print()
+
+                self.payout(player, bank, bet_amount)
+                self.reset(player, bank)
+
+                play_again = input("Do you want to play another round of Blackjack? (yes/no): ")
+                if play_again.lower() != "yes":
+                    break
+            elif start_game.lower() == "no":
+                return
+            else:
+                print("Invalid input. Please enter 'yes' or 'no'.")
 
     def reset(self, player, bank):
         player.hand = []
@@ -542,3 +605,5 @@ class SlotMachine:
                 bet_amount = self.ask_bet_amount(player)
             elif command == "1":
                 continue
+
+

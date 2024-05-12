@@ -690,5 +690,5 @@ class Slotmachine:
             self.print_rules()
             self.game_loop(player)
         else:
-            self.game_loop(player)
+            self.game_loop(player)#
             

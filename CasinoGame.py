@@ -1,5 +1,8 @@
 #FirstLine
-import random
+import random, time
+from colorama import Fore, Style
+from termcolor import colored
+
 
 class Games:
     
@@ -193,6 +196,8 @@ class Blackjack:
 
                 self.payout(player, bank, bet_amount)
                 self.reset(player, bank)
+                if player.wealth <= 0:
+                    return
 
                 play_again = input("Do you want to play another round of Blackjack? (yes/no): ")
                 if play_again.lower() != "yes":
@@ -254,14 +259,14 @@ class Roulette:
     ["3", "6", "9", "12", "15", "18", "21", "24", "27", "30", "33", "36"],
     ["2", "5", "8", "11", "14", "17", "20", "23", "26", "29", "32", "35"],
     ["1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"],
-    ["0", "00"]
+    ["0"]
 ]
         self.bet_types = {
     "Straight Up": "Bet on a single number.",
     "Split Bet": "Bet on two adjacent numbers by placing chips on the line between them.",
     "Street Bet": "Bet on three numbers in a row (a 'street') by placing chips on the edge of the row.",
     "Corner Bet": "Bet on a group of four numbers that form a square by placing chips at the corner where the four numbers meet.",
-    "Line Bet": "Bet on six numbers by placing chips on the edge of two adjacent rows.",
+    "Line Bet": "Bet on six numbers by placing chips on the edge of two adjacent rows covered by the roulette betting layout. It encompasses six numbers in total, comprising all the numbers in the two selected rows.",
     "Dozens Bet": "Bet on a group of twelve numbers (1-12, 13-24, or 25-36).",
     "Column Bet": "Bet on a vertical column of twelve numbers.",
     "Even/Odd": "Bet on whether the ball will land on an even or odd number.",
@@ -274,35 +279,66 @@ class Roulette:
         return "Welcome to Roulette!"
     
     def spin_wheel(self):
-        self.winning_number = random.randint(0, 36)
+        self.winning_number = random.randint(0, 36)  # assuming a European roulette wheel
+        color = self.roulette_options[self.winning_number]
+        print("The winning number is: ")
+        padding = " " * ((6 - len(f"{self.winning_number:02d}")) // 2)
+        if color == "red":
+            print("╔══════╗")
+            print("║" + padding + colored(f"{self.winning_number:02d}", 'red', 'on_white') + padding + "║")
+            print("╚══════╝")
+        elif color == "black":
+            print("╔══════╗")
+            print("║" + padding + colored(f"{self.winning_number:02d}", 'grey', 'on_white') + padding + "║")
+            print("╚══════╝")
+        elif color == "green":
+            print("╔═════╗")
+            print("║  " + colored(f"{self.winning_number}", 'green', 'on_white') + "  ║")
+            print("╚═════╝")
+        print(Style.RESET_ALL)
 
-    def choose_bet_type(self):
-        bet_type = input("Please enter your bet type: ")
-        if bet_type in self.bet_types:
-            if bet_type == "Straight":
-                self.straight_bet()
-            elif bet_type == "Split":
-                self.split_bet()
-            elif bet_type == "Street":
-                self.street_bet()
-            elif bet_type == "Corner":
-                self.corner_bet()
-            elif bet_type == "Six Line":
-                self.six_line_bet()
-            elif bet_type == "Column":
-                self.column_bet()
-            elif bet_type == "Dozen":
-                self.dozen_bet()
-            elif bet_type == "Red/Black":
-                self.red_black_bet()
-            elif bet_type == "Even/Odd":
-                self.even_odd_bet()
-            elif bet_type == "Low/High":
-                self.low_high_bet()
+    def print_rules(self):
+        print("Welcome to Roulette! Here are the basic rules:")
+        print("1. The game involves a spinning wheel with numbered pockets and a small ball.")
+        print("2. You place bets on which number or group of numbers the ball will land on.")
+        print("3. The wheel is spun and the ball is dropped in the opposite direction.")
+        print("4. When the wheel stops spinning, the ball lands in one of the numbered pockets.")
+        print("5. If the ball lands on a number or group of numbers you bet on, you win!")
+        input("Press Enter to see the different bet types you can place...")
+        print("Here are the different bet types:")
+        for bet_type, explanation in self.bet_types.items():
+            print(f"   - {bet_type}: {explanation}")
+
+    def choose_bet_type(self, player):
+        while True:
+            bet_type = input("Choose a bet type: ")
+            if bet_type in self.bet_types:
+                print(f"You have chosen the {bet_type} bet type.")
+                player.bet_type = bet_type
+                if bet_type == "Straight Up":
+                    self.straight_up_type(bet_type, player)
+                elif bet_type == "Split Bet":
+                    self.split_bet_type(bet_type, player)
+                elif bet_type == "Street Bet":
+                    self.street_bet_type(bet_type, player)
+                elif bet_type == "Corner Bet":
+                    self.corner_bet_type(bet_type, player)
+                elif bet_type == "Line Bet":
+                    self.line_bet_type(bet_type, player)
+                elif bet_type == "Dozens Bet":
+                    self.dozens_bet_type(bet_type, player)
+                elif bet_type == "Column Bet":
+                    self.column_bet_type(bet_type, player)
+                elif bet_type == "Even/Odd":
+                    self.even_odd_bet_type(bet_type, player)
+                elif bet_type == "Red/Black":
+                    self.red_black_bet_type(bet_type, player)
+                elif bet_type == "Low/High":
+                    self.low_high_bet_type(bet_type, player)
+            else:
+                print("Invalid bet type. Please try again.")
+                continue
             return bet_type
-        else:
-            print("Invalid bet type")
-            return self.choose_bet_type()
     
     def show_bet_types(self):
         self.all_bet_types = []
@@ -319,8 +355,8 @@ class Roulette:
     def straight_up_type(self, bet_type, player):
         if bet_type == "Straight Up":
             while True:
-                chosen_number = input("Enter a number to bet on: ")
-                if chosen_number in self.roulette.options:
+                chosen_number = int(input("Enter a number to bet on: "))
+                if chosen_number in self.roulette_options:
                     player.chosen_number = chosen_number  # Set the chosen_number attribute of the player
                     return chosen_number
                 else:
@@ -389,32 +425,27 @@ class Roulette:
                 else:
                     print("Invalid numbers. Please enter four numbers forming a square. To get an impression of a square look at a typical roulette grid.")
 
-    def line_bet_type(self, player, bet_type):
-        if bet_type == "Line Bet":
-            while True:
-                chosen_numbers = input("Enter six numbers by placing chips on the edge of two adjacent rows, separated by a space: ").split()
-                if len(chosen_numbers) != 6:
-                    print("Invalid input. Please enter six numbers.")
-                    continue
-                # Convert chosen_numbers to integers
-                chosen_numbers = [int(num) for num in chosen_numbers]
-                # Check if the numbers are in the roulette options
-                if min(chosen_numbers) < 0 or max(chosen_numbers) > 36:
-                    print("Invalid numbers. Please enter numbers between 0 and 36.")
-                    continue
-                # Check if the numbers are six in a row
-                chosen_numbers.sort()
-                if (chosen_numbers[5] - chosen_numbers[4] == 1 and chosen_numbers[4] - chosen_numbers[3] == 1 and chosen_numbers[3] - chosen_numbers[2] == 1 and
-                    chosen_numbers[2] - chosen_numbers[1] == 1 and chosen_numbers[1] - chosen_numbers[0]== 1):
-                    player.chosen_numbers = chosen_numbers
-                    return chosen_numbers
-                else:
-                    print("Invalid numbers. Please enter six numbers forming a row.")
+    def line_bet_type(self, bet_type, player):
+        print("Choose two adjacent rows by entering the first number of each row.")
+        print("For example, to bet on the rows containing the numbers 1-3 and 4-6, enter '1,4'.")
+        rows = input("Enter the first number of each row, separated by a comma: ").split(',')
+        try:
+            row1 = int(rows[0])
+            row2 = int(rows[1])
+            if row1 < 1 or row1 > 34 or row2 < 1 or row2 > 34 or row2 - row1 != 3:
+                print("The rows are not adjacent. Please enter two adjacent rows.")
+                return self.line_bet_type(bet_type, player)
+            else:
+                player.chosen_numbers = list(range(row1, row1+3)) + list(range(row2, row2+3))
+                return player.chosen_numbers
+        except ValueError:
+            print("Invalid input. Please enter two numbers, separated by a comma.")
+            return self.line_bet_type(bet_type, player)
     
-    def dozens_bet_type(self, player, bet_type):
+    def dozens_bet_type(self, bet_type, player):
         if bet_type == "Dozens Bet":
             while True:
-                chosen_number = input("Enter a number from 1 to 3 representing a group of twelve numbers. 1 for the group 1-12, 2 for the group 13-24, 3 for the group 25-36.")
+                chosen_number = input("Enter a number from 1 to 3 representing a group of twelve numbers. 1 for the group 1-12, 2 for the group 13-24, 3 for the group 25-36. ")
                 if int(chosen_number) != 1 and int(chosen_number) != 2 and int(chosen_number) != 3:
                     print("Invalid input. Please enter the number 1, 2 or 3 representing a group of twelve numbers.(1: 1-12, 2: 13-24, 3: 25-36)")
                     continue
@@ -427,10 +458,10 @@ class Roulette:
                 player.chosen_numbers = dozens[int(chosen_number)]
                 return player.chosen_numbers
     
-    def column_bet_type(self, player, bet_type):
+    def column_bet_type(self, bet_type, player):
         if bet_type == "Column Bet":
             while True:
-                chosen_number = input("Enter a number from 1 to 3 representing a column of twelve numbers according to the typical roulette grid. 1 for the column 3, 6, 9, 12...; 2 for the column 2, 5, 8, 11...; 3 for the column 1, 4, 7, 10... .")
+                chosen_number = input("Enter a number from 1 to 3 representing a column of twelve numbers according to the typical roulette grid. 1 for the column 3, 6, 9, 12...; 2 for the column 2, 5, 8, 11...; 3 for the column 1, 4, 7, 10... . ")
                 if int(chosen_number) != 1 and int(chosen_number) != 2 and int(chosen_number) != 3:
                     print("Invalid input. Please enter the number 1, 2, or 3 representing a column of twelve numbers according to the typical roulette grid. 1 for the column 3, 6, 9, 12...; 2 for the column 2, 5, 8, 11...; 3 for the column 1, 4, 7, 10... .")
                     continue
@@ -443,10 +474,10 @@ class Roulette:
                 player.chosen_numbers = columns[int(chosen_number)]
                 return player.chosen_numbers
             
-    def even_odd_bet_type(self, player, bet_type):
+    def even_odd_bet_type(self, bet_type, player):
         if bet_type == "Even/Odd":
             while True:
-                chosen_string = input("What is your preferred range of numbers? Type \"even\" to select all even numbers, type \"odd\" to select all odd numbers.")
+                chosen_string = input("What is your preferred range of numbers? Type \"even\" to select all even numbers, type \"odd\" to select all odd numbers. ")
                 if chosen_string.lower() != "even" and chosen_string.lower() != "odd":
                     print("Invalid input. Please enter \"even\" or \"odd\" according to your preferred range of numbers.")
                     continue
@@ -457,10 +488,10 @@ class Roulette:
                 player.chosen_numbers = even_odd_dict[chosen_string]
                 return player.chosen_numbers
     
-    def red_black_bet_type(self, player, bet_type):
+    def red_black_bet_type(self, bet_type, player):
         if bet_type == "Red/Black":
             while True:
-                chosen_string = input("What is your preferred colour to bet on? Type \"red\" to select all red numbers, type \"black\" to select all black numbers.")
+                chosen_string = input("What is your preferred colour to bet on? Type \"red\" to select all red numbers, type \"black\" to select all black numbers. ")
                 if chosen_string.lower() != "red" and chosen_string.lower() != "black":
                     print("Invalid input. Please enter \"red\" to choose all red numbers, enter \"black\" to choose all black numbers.")
                     continue
@@ -475,7 +506,7 @@ class Roulette:
                             player.chosen_numbers.append(key)
                 return player.chosen_numbers
     
-    def low_high_bet_type(self, player, bet_type):
+    def low_high_bet_type(self, bet_type, player):
         if bet_type == "Low/High":
             while True:
                 chosen_string = input("What is your preferred range to bet on? Type \"low\" to select all the numbers between 1 and 18, type \"high\" to select all the numbers between 19 and 36.")
@@ -490,19 +521,20 @@ class Roulette:
                 return player.chosen_numbers
     
     def payout(self, player, bet_amount, bet_type):
-        if bet_type == "Straight":
+        initial_wealth = player.wealth
+        if bet_type == "Straight Up":
             payout_ratio = 36
-        elif bet_type == "Split":
+        elif bet_type == "Split Bet":
             payout_ratio = 18
-        elif bet_type == "Street":
+        elif bet_type == "Street Bet":
             payout_ratio = 12
-        elif bet_type == "Corner":
+        elif bet_type == "Corner Bet":
             payout_ratio = 9
-        elif bet_type == "Six Line":
+        elif bet_type == "Line Bet":
             payout_ratio = 6
-        elif bet_type == "Column":
+        elif bet_type == "Column Bet":
             payout_ratio = 3
-        elif bet_type == "Dozen":
+        elif bet_type == "Dozens Bet":
             payout_ratio = 3
         elif bet_type == "Red/Black":
             payout_ratio = 2
@@ -520,22 +552,52 @@ class Roulette:
         else:
             print(f"{player.name} loses the bet.")
             player.wealth -= bet_amount
+        
+        winnings = player.wealth - initial_wealth
+        if winnings > 0:
+            print(f"{player.name} won {format(winnings, '.2f')}$ in this round.")
+        elif winnings < 0:
+            print(f"{player.name} lost {format(-winnings, '.2f')}$ in this round.")
+        print(f"{player.name}'s current balance is {format(player.wealth, '.2f')}$.")
+
     
-    def play(self, player):
+    def play(self, player, first_time=True):
+        if first_time:
+            self.print_rules()
+        else:
+            print("Here are the different bet types again:")
+        for bet_type, explanation in self.bet_types.items():
+            print(f"   - {bet_type}: {explanation}")
         bet_amount = player.bet()
-        bet_type = self.choose_bet_type()
+        bet_type = self.choose_bet_type(player)
+
+        input("Press Enter to spin the wheel...")
+        print("Spinning", end="", flush=True) # Using flush to immediatly output string to terminal
+        for _ in range(3):
+            print(".", end="", flush=True) # Using flush again to immediatly output string to terminal
+            time.sleep(1)
+        print()
+
         self.spin_wheel()
-
-        # Print the winning number with a frame around it
-        print(f"╔══════╗")
-        print(f"║  {self.winning_number:02d} ║")
-        print(f"╚══════╝")
-
+        
         self.payout(player, bet_amount, bet_type)
 
+        if player.wealth <= 0:
+            return
+
+        while True:
+            play_again = input("Do you want to play another round of roulette? (yes/no): ")
+            if play_again.lower() == "yes":
+                self.play(player, first_time=False)
+                break
+            elif play_again.lower() == "no":
+                break
+            else:
+                print("Invalid input. Please enter 'yes' or 'no'.")
 
 
-class SlotMachine:
+
+class Slotmachine:
 
     def __init__(self):
 
@@ -548,16 +610,23 @@ class SlotMachine:
     def __repr__(self):
         return "Welcome to the Slot Machine!"
     
+    def print_rules(self):
+        print("Welcome to the Slot Machine!")
+        print("In this game, you'll spin the reels to match symbols.")
+        print("There are 5 different symbols, representing numbers 1 through 5.")
+        print("Your goal is to line up three matching symbols horizontally or diagonally on the reels to win the bet.")
+        print("Place your bet, spin the reels, and may luck be on your side!")
+    
     def pulling_the_lever(self):
         for i in range(3):
-            self.slot_grid[i] = [random.randint(0, 9) for _ in range(3)]
+            self.slot_grid[i] = [random.randint(1, 5) for _ in range(3)]
         return self.slot_grid
 
     def ask_bet_amount(self, player):
         while True:
-            print(f"You can bet up to {player.balance}")
+            print(f"You can bet up to {player.wealth}")
             bet_amount = input("Enter your bet amount: ")
-            if bet_amount.isdigit() and 0 < int(bet_amount) <= player.balance:
+            if bet_amount.isdigit() and 0 < int(bet_amount) <= player.wealth:
                 return int(bet_amount)
             else:
                 print("Invalid input. Please enter a positive number up to your current balance.")
@@ -572,25 +641,31 @@ class SlotMachine:
         print("+---+---+---+")
 
     def pulling_the_lever(self, player, bet_amount):
+        player.wealth -= bet_amount
         for i in range(3):
-            self.slot_grid[i] = [random.randint(0, 9) for _ in range(3)]
+            self.slot_grid[i] = [random.randint(1, 5) for _ in range(3)]
         self.display_slot_grid()
-        if self.payout(player, bet_amount):
-            print("Congratulations, you won!")
+        winnings = self.payout(player, bet_amount)
+        if winnings:
+            print("Congratulations, you won " + str(winnings) + "$!")
+            print("Your current balance: " + str(player.wealth) + "$")
         return self.slot_grid
     
     def payout(self, player, bet_amount):
+        winnings = 0
         # Check for horizontal wins
         for row in self.slot_grid:
             if len(set(row)) == 1:
-                player.balance += bet_amount * 10
-                return True
+                winnings = bet_amount * 5
+                player.wealth += winnings
+                return winnings
 
         # Check for diagonal wins
         if self.slot_grid[0][0] == self.slot_grid[1][1] == self.slot_grid[2][2] or \
            self.slot_grid[0][2] == self.slot_grid[1][1] == self.slot_grid[2][0]:
-            player.balance += bet_amount * 10
-            return True
+            winnings = bet_amount * 5
+            player.wealth += winnings
+            return winnings
 
         return False
     
@@ -598,12 +673,22 @@ class SlotMachine:
         bet_amount = self.ask_bet_amount(player)
         while True:
             self.pulling_the_lever(player, bet_amount)
+            if player.wealth <= 0:
+                break
             print("1. Spin again")
             print("2. Change bet amount")
-            command = input("Enter a command by typing \"1\" or \"2\": ")
+            print("3. Exit game")
+            command = input("Enter a command by typing \"1\", \"2\" or \"3\": ")
             if command == "2":
                 bet_amount = self.ask_bet_amount(player)
-            elif command == "1":
-                continue
+            elif command == "3":
+                break
 
 
+    def play(self, player, first_time=True):
+        if first_time == True:
+            self.print_rules()
+            self.game_loop(player)
+        else:
+            self.game_loop(player)
+            

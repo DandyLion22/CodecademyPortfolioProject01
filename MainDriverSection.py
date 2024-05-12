@@ -1,7 +1,7 @@
 #1: Import necessary classes
 import os
 import time
-from CasinoGame import Games, Player, Blackjack, Roulette, SlotMachine
+from CasinoGame import Games, Player, Blackjack, Roulette, Slotmachine
 
 #2: Clear the terminal screen
 
@@ -38,7 +38,7 @@ while True:
         bank = Player("Bank", 1000000, "low")
         games.add_game("Blackjack", Blackjack, bank)
         games.add_game("Roulette", Roulette)
-        games.add_game("Slot Machine", SlotMachine)
+        games.add_game("Slotmachine", Slotmachine)
         # Ask for player data
         player_name = input("What's your name? ")
         player_wealth = float(input("How much money do you bring to the tables? "))
@@ -54,19 +54,21 @@ while True:
         print(games)
         while True:
             print("Available games: ", games.get_available_games())
-            game_choice = input("Which game would you like to play? ")
-            if game_choice.lower() == "blackjack":
-                games.play_game("Blackjack", player1)
-            elif game_choice.lower() == "roulette":
-                games.play_game("Roulette", player1)
-            elif game_choice.lower() == "slotmachine":
-                games.play_game("Slot Machine", player1)
+            game_choice = input("Which game would you like to play? ").lower()
+            if game_choice in [game.lower() for game in games.get_available_games()]:
+                games.play_game(game_choice.capitalize(), player1)
+                if player1.wealth <= 0:
+                    print("You've run out of money! The casino security escorts you to the exit...")
+                    print("Thanks for playing. Goodbye!")
+                    exit()
+                play_again = input("Do you want to play another game? (yes/no): ")
+                if play_again.lower() == "no":
+                    break
             else:
                 print("Invalid choice. Please try again.")
-                continue
     elif choice.lower() == "quit":
         # Exit the game
         print("Thanks for playing. Goodbye!")
-        break
+        exit()
     else:
         print("Invalid choice. Please try again.")

@@ -15,6 +15,11 @@ class Games:
     
     def add_game(self, game_name, game_class, *args):
         self.games[game_name] = (game_class, args)
+    
+    def print_available_games(self):
+        colors = [Fore.RED, Fore.GREEN, Fore.YELLOW, Fore.BLUE, Fore.MAGENTA, Fore.CYAN]
+        games = [colors[i % len(colors)] + game + Fore.RESET for i, game in enumerate(self.games.keys())]
+        print("Available games:   " + '      '.join(games))
 
     def get_available_games(self):
         return list(self.games.keys())
@@ -43,10 +48,10 @@ class Player:
     def __repr__(self):
         status_broke = ""
         if self.is_broke:
-            status_broke = "is broke."
+            status_broke = "is broke"
         else:
-            status_broke = "not (yet) broke."
-        return "Your name is {name}, you have {wealth}$ in your pocket remaining and therefore considered {status}. Your risk aversity is: {risk_aversity}.".format(name=self.name, wealth=self.wealth, status=status_broke, risk_aversity=self.risk_aversity)
+            status_broke = "not (yet) broke"
+        return f"Your name is {self.name}, you have {self.wealth:.2f}$ in your pocket remaining and are therefore considered {status_broke}. Your risk aversity is: {self.risk_aversity}."
     
     def add_card(self, card):
         self.hand.append(card)
@@ -63,9 +68,9 @@ class Player:
         if self.risk_aversity == "low":
             bet_amount = self.wealth * 0.01
         elif self.risk_aversity == "medium":
-            bet_amount = self.wealth * 0.05
+            bet_amount = self.wealth * 0.02
         elif self.risk_aversity == "high":
-            bet_amount = self.wealth * 0.1
+            bet_amount = self.wealth * 0.03
         self.wealth -= bet_amount
         return bet_amount
 
@@ -85,7 +90,7 @@ class Blackjack:
         if player_total > 21 or (bank_total <= 21 and bank_total > player_total):
             print(f"{player.name} loses the bet.")
         elif player_total == 21:
-            print(f"{player.name} got a Blackjack!")
+        #    print(f"{player.name} got a Blackjack!") -> commented out, otherwise gets double-printed
             player.wealth += bet_amount * 2.5  # Return the bet amount and the winnings at 3:2 ratio
         elif bank_total > 21 or player_total > bank_total:
             print(f"{player.name} wins the bet.")
@@ -114,6 +119,7 @@ class Blackjack:
         print(f"{player.name}'s hand: [{hand_str}], total: {player.calculate_hand()}")
 
     def print_rules(self):
+        print("Welcome to Blackjack!")
         print("Here are the rules:")
         print("1. You are competing against the bank. The goal is to get as close to 21 as possible without going over.")
         print("2. You start with two cards and can choose to draw more.")
@@ -509,7 +515,7 @@ class Roulette:
     def low_high_bet_type(self, bet_type, player):
         if bet_type == "Low/High":
             while True:
-                chosen_string = input("What is your preferred range to bet on? Type \"low\" to select all the numbers between 1 and 18, type \"high\" to select all the numbers between 19 and 36.")
+                chosen_string = input("What is your preferred range to bet on? Type \"low\" to select all the numbers between 1 and 18, type \"high\" to select all the numbers between 19 and 36. ")
                 if chosen_string.lower() != "low" and chosen_string.lower() != "high":
                     print("Invalid input. Please enter \"low\" to select all the numbers between 1 and 18 or enter \"high\" to select all the numbers between 19 and 36.")
                     continue
@@ -624,12 +630,12 @@ class Slotmachine:
 
     def ask_bet_amount(self, player):
         while True:
-            print(f"You can bet up to {player.wealth}")
+            print(f"You can bet up to {round(player.wealth, 2)}")
             bet_amount = input("Enter your bet amount: ")
             if bet_amount.isdigit() and 0 < int(bet_amount) <= player.wealth:
                 return int(bet_amount)
             else:
-                print("Invalid input. Please enter a positive number up to your current balance.")
+                print("Invalid input. Please enter a positive number up to your current balance. No decimal places allowed.")
 
     def display_slot_grid(self):
         for row in self.slot_grid:
@@ -639,6 +645,7 @@ class Slotmachine:
                 print(f" {num} |", end="")
             print()
         print("+---+---+---+")
+        
 
     def pulling_the_lever(self, player, bet_amount):
         player.wealth -= bet_amount
@@ -649,6 +656,8 @@ class Slotmachine:
         if winnings:
             print("Congratulations, you won " + str(winnings) + "$!")
             print("Your current balance: " + str(player.wealth) + "$")
+        else:
+            print("Current balance: {:.2f}$".format(player.wealth))
         return self.slot_grid
     
     def payout(self, player, bet_amount):
@@ -690,5 +699,5 @@ class Slotmachine:
             self.print_rules()
             self.game_loop(player)
         else:
-            self.game_loop(player)#
+            self.game_loop(player)##
             

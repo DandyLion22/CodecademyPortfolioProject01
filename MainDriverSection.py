@@ -1,4 +1,4 @@
-#1: Import necessary classes
+#1: Import necessary classes(CasinoGame.py) and packages
 import os
 import time
 from colorama import Fore, Style
@@ -34,7 +34,7 @@ while True:
 
     # Process user input
     if choice.lower() == "play":
-        # Start playing the game
+        # Start playing the game; add available games, add "Bank" as opposing player (Blackjack)
         print("Good luck!")
         games = Games("Casino Royale")
         bank = Player("Bank", 1000000, "low")
@@ -59,7 +59,7 @@ while True:
             game_choice = input("Which game would you like to play? ").lower()
             if game_choice in [game.lower() for game in games.get_available_games()]:
                 games.play_game(game_choice.capitalize(), player1)
-                if player1.wealth <= 0:
+                if player1.wealth <= 0: # In case player runs out of money the game quits automatically
                     print("You've run out of money! The casino security escorts you to the exit...")
                     print("Thanks for playing. Goodbye!")
                     exit()

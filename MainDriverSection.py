@@ -1,6 +1,8 @@
 #1: Import necessary classes
 import os
 import time
+from colorama import Fore, Style
+from termcolor import colored
 from CasinoGame import Games, Player, Blackjack, Roulette, Slotmachine
 
 #2: Clear the terminal screen
@@ -13,7 +15,7 @@ print("Welcome to Casino Royale!")
 print("===========================")
 print()
 
-print("""
+print(Fore.RED + """
  _____           _              ______                  _      
 /  __ \         (_)             | ___ \                | |     
 | /  \/ __ _ ___ _ _ __   ___   | |_/ /___  _   _  __ _| | ___ 
@@ -21,8 +23,8 @@ print("""
 | \__/\ (_| \__ \ | | | | (_) | | |\ \ (_) | |_| | (_| | |  __/
  \____/\__,_|___/_|_| |_|\___/  \_| \_\___/ \__, |\__,_|_|\___|
                                              __/ |             
-                                            |___/   
-""")
+                                            |___/ 
+""" + Style.RESET_ALL)
 
 #4: Main game loop
 
@@ -41,10 +43,10 @@ while True:
         games.add_game("Slotmachine", Slotmachine)
         # Ask for player data
         player_name = input("What's your name? ")
-        player_wealth = float(input("How much money do you bring to the tables? "))
+        player_wealth = float(input("How many $$$ do you bring to the tables? "))
         while int(player_wealth) <= 0:
             player_wealth = input("You can\'t play any of our games without a sufficent balance. How much money do you bring to the tables? ")
-        player_risk = input("What\'s your risk aversity? Choose between \"low\", \"medium\" or \"high\". ")
+        player_risk = input("What\'s your risk aversity? Choose between \"low\" (risk 1% of your balance per bet), \"medium\" (risk 2% of your balance per bet) or \"high\"(risk 3% of your balance per bet): ")
         while player_risk not in ["low", "medium", "high"]:
             player_risk = input("What's your risk aversity? Choose between \"low\", \"medium\" or \"high\": ")
         # Create player object
@@ -52,8 +54,8 @@ while True:
         print(player1)
         # Show available games, ask for preferred game
         print(games)
+        games.print_available_games()
         while True:
-            print("Available games: ", games.get_available_games())
             game_choice = input("Which game would you like to play? ").lower()
             if game_choice in [game.lower() for game in games.get_available_games()]:
                 games.play_game(game_choice.capitalize(), player1)
@@ -64,6 +66,9 @@ while True:
                 play_again = input("Do you want to play another game? (yes/no): ")
                 if play_again.lower() == "no":
                     break
+                elif play_again.lower() == "yes":
+                    games.print_available_games()
+                    continue
             else:
                 print("Invalid choice. Please try again.")
     elif choice.lower() == "quit":

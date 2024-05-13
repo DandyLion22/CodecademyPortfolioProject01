@@ -1,9 +1,9 @@
-#FirstLine
+#1: Import necessary packages
 import random, time
 from colorama import Fore, Style
 from termcolor import colored
 
-
+#2: Create Games class: important for adding new games, printing them to the terminal and accessing them
 class Games:
     
     def __init__(self, name):
@@ -13,26 +13,26 @@ class Games:
     def __repr__(self):
         return "There are currently {games} different games to choose from.".format(games = len(self.games))
     
-    def add_game(self, game_name, game_class, *args):
+    def add_game(self, game_name, game_class, *args): # Add every game to dictionary(self.games) with corresponding class and specific arguments, which will be generated further down
         self.games[game_name] = (game_class, args)
     
     def print_available_games(self):
         colors = [Fore.RED, Fore.GREEN, Fore.YELLOW, Fore.BLUE, Fore.MAGENTA, Fore.CYAN]
-        games = [colors[i % len(colors)] + game + Fore.RESET for i, game in enumerate(self.games.keys())]
+        games = [colors[i % len(colors)] + game + Fore.RESET for i, game in enumerate(self.games.keys())] # Gives every (future) game a different color to stand out
         print("Available games:   " + '      '.join(games))
 
     def get_available_games(self):
         return list(self.games.keys())
     
-    def play_game(self, game_name, player):
+    def play_game(self, game_name, player): 
         if game_name in self.games:
-            game_class, args = self.games[game_name]
-            game = game_class()
-            game.play(player, *args)
+            game_class, args = self.games[game_name] # Get specific game class and arguments
+            game = game_class() # Create game object
+            game.play(player, *args) # Start chosen game, by passing player and necessary args
         else:
             print("Sorry, that game is not available.")
 
-
+#3: Create Player class: Collecting and handling player data during gaming process
 class Player:
     
     def __init__(self, name, wealth, risk_aversity, is_broke = False):
@@ -53,10 +53,10 @@ class Player:
             status_broke = "not (yet) broke"
         return f"Your name is {self.name}, you have {self.wealth:.2f}$ in your pocket remaining and are therefore considered {status_broke}. Your risk aversity is: {self.risk_aversity}."
     
-    def add_card(self, card):
+    def add_card(self, card):   # rel. for 'Blackjack' class
         self.hand.append(card)
 
-    def calculate_hand(self):
+    def calculate_hand(self): # rel. for 'Blackjack' class: returns total & introduces func. to handle aces as 1 or 11 points dep. on total
         ace_count = self.hand.count(11)
         total = sum(self.hand)
         while total > 21 and ace_count > 0:
@@ -64,7 +64,7 @@ class Player:
             ace_count -= 1
         return total
     
-    def bet(self):
+    def bet(self): # effect of risk aversity on bet amount
         if self.risk_aversity == "low":
             bet_amount = self.wealth * 0.01
         elif self.risk_aversity == "medium":
@@ -73,10 +73,11 @@ class Player:
             bet_amount = self.wealth * 0.03
         self.wealth -= bet_amount
         return bet_amount
-
+    
+#4: Create Blackjack class: Includes all necessary game data and mechanics
 class Blackjack:
-    def __init__(self):
-        self.deck = [i for i in range(1, 12)] * 4
+    def __init__(self): # deck setup; no suits needed, only numerical values of the cards matter for gameplay
+        self.deck = [i for i in range(2, 12)] * 4 + [10, 10, 10] * 4
         random.shuffle(self.deck)
 
     def __repr__(self):
@@ -87,6 +88,8 @@ class Blackjack:
         bank_total = bank.calculate_hand()
         initial_wealth = player.wealth + bet_amount
 
+        print(f"Bank: {bank_total}    Player: {player_total}") # Print the player's and the bank's total points in one line
+
         if player_total > 21 or (bank_total <= 21 and bank_total > player_total):
             print(f"{player.name} loses the bet.")
         elif player_total == 21:
@@ -94,12 +97,12 @@ class Blackjack:
             player.wealth += bet_amount * 2.5  # Return the bet amount and the winnings at 3:2 ratio
         elif bank_total > 21 or player_total > bank_total:
             print(f"{player.name} wins the bet.")
-            player.wealth += bet_amount * 2  # Return the bet amount and the winnings
+            player.wealth += bet_amount * 2  # Return bet amount and winnings
         else:  # It's a tie
             print("It's a tie.")
-            player.wealth += bet_amount  # Return the bet amount
+            player.wealth += bet_amount  # Return bet amount
 
-        winnings = player.wealth - initial_wealth
+        winnings = player.wealth - initial_wealth # Display players' winnings or losses
         if winnings > 0:
             print(f"{player.name} won {format(winnings, '.2f')}$ in this round.")
         elif winnings < 0:
@@ -115,10 +118,10 @@ class Blackjack:
         return card_str
 
     def print_hand(self, player):
-        hand_str = ", ".join([str(card) if card != 11 or sum(player.hand) <= 21 else f"{card}(1)" for card in player.hand])
+        hand_str = ", ".join([str(card) if card != 11 or sum(player.hand) <= 21 else f"{card}(1)" for card in player.hand]) # Show players' hand; "11(1)" for ace
         print(f"{player.name}'s hand: [{hand_str}], total: {player.calculate_hand()}")
 
-    def print_rules(self):
+    def print_rules(self): # Blackjack rules
         print("Welcome to Blackjack!")
         print("Here are the rules:")
         print("1. You are competing against the bank. The goal is to get as close to 21 as possible without going over.")
@@ -129,11 +132,11 @@ class Blackjack:
         print("6. If neither you nor the bank gets 21, the one closest to 21 wins.")
         print("7. REMEMBER: An Ace can be treated as either the value of 1 or 11!")
 
-    def player_choice(self, player):
+    def player_choice(self, player): 
         choice = input(f"{player.name}, do you want to draw another card? (yes/no) ")
         return choice.lower() == "yes"
        
-    def play(self, player, bank):
+    def play(self, player, bank): # Main Blackjack game loop
         self.print_rules()
         while True:
             start_game = input("Do you want to start the game and draw two cards? (yes/no): ")
@@ -165,7 +168,7 @@ class Blackjack:
 
                 bet_amount = player.bet()
                 outcome = None # Variable to keep track of the game's outcome
-                while self.player_choice(player):
+                while self.player_choice(player): # Keep asking player to take cards until he declines or 1 of 3 outcomes takes place
                     self.deal_card(player)
                     self.print_hand(player)
                     for i in range(5):  # Assuming each card has 5 lines
@@ -187,8 +190,8 @@ class Blackjack:
                         print(f"{player.name} wins!")
                         outcome = 'win'
                         break
-            
-                if outcome is None:
+                    
+                if outcome is None: # If one of the outcomes (overbought, blackjack, win) happens, banks' hand becomes irrelevant (= not None)
                     while bank.calculate_hand() < 17:
                         self.deal_card(bank)
                         print(f"Bank's hand: {bank.hand}, total: {bank.calculate_hand()}")
@@ -201,7 +204,7 @@ class Blackjack:
                             print()
 
                 self.payout(player, bank, bet_amount)
-                self.reset(player, bank)
+                self.reset(player, bank) # Reshuffle deck for next round (line 219)
                 if player.wealth <= 0:
                     return
 
@@ -219,6 +222,7 @@ class Blackjack:
         self.deck = [i for i in range(1, 12)] * 4
         random.shuffle(self.deck)
 
+#5: Create Roulette class: Includes all necessary game data and mechanics
 class Roulette:
 
     def __init__(self):
@@ -261,12 +265,14 @@ class Roulette:
     35: "black",
     36: "red"
 }
+        # Setting up betting grid: important for different bet types
         self.betting_grid = [
     ["3", "6", "9", "12", "15", "18", "21", "24", "27", "30", "33", "36"],
     ["2", "5", "8", "11", "14", "17", "20", "23", "26", "29", "32", "35"],
     ["1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"],
     ["0"]
 ]
+        # Explanation bet types
         self.bet_types = {
     "Straight Up": "Bet on a single number.",
     "Split Bet": "Bet on two adjacent numbers by placing chips on the line between them.",
@@ -287,7 +293,7 @@ class Roulette:
     def spin_wheel(self):
         self.winning_number = random.randint(0, 36)  # assuming a European roulette wheel
         color = self.roulette_options[self.winning_number]
-        print("The winning number is: ")
+        print("The winning number is: ") # proper design for winning number below:
         padding = " " * ((6 - len(f"{self.winning_number:02d}")) // 2)
         if color == "red":
             print("╔══════╗")
@@ -303,7 +309,7 @@ class Roulette:
             print("╚═════╝")
         print(Style.RESET_ALL)
 
-    def print_rules(self):
+    def print_rules(self): # Roulette rules
         print("Welcome to Roulette! Here are the basic rules:")
         print("1. The game involves a spinning wheel with numbered pockets and a small ball.")
         print("2. You place bets on which number or group of numbers the ball will land on.")
@@ -346,7 +352,7 @@ class Roulette:
                 continue
             return bet_type
     
-    def show_bet_types(self):
+    def show_bet_types(self): # Created only for future purposes
         self.all_bet_types = []
         for key in self.bet_types.keys():
             self.all_bet_types.append(self.bet_types[key])
@@ -358,6 +364,7 @@ class Roulette:
         else:
             return "Invalid bet type"
 
+    # Declaring all the methods for the different bet types:
     def straight_up_type(self, bet_type, player):
         if bet_type == "Straight Up":
             while True:
@@ -526,7 +533,7 @@ class Roulette:
                     player.chosen_numbers.extend(range(19, 37))
                 return player.chosen_numbers
     
-    def payout(self, player, bet_amount, bet_type):
+    def payout(self, player, bet_amount, bet_type): # Set up payout ratio for every bet type
         initial_wealth = player.wealth
         if bet_type == "Straight Up":
             payout_ratio = 36
@@ -552,14 +559,14 @@ class Roulette:
             print("Invalid bet type.")
             return
 
-        if self.winning_number in player.chosen_numbers:
+        if self.winning_number in player.chosen_numbers:    # Winning & Losing scenario
             print(f"{player.name} wins the bet.")
             player.wealth += bet_amount * payout_ratio
         else:
             print(f"{player.name} loses the bet.")
             player.wealth -= bet_amount
         
-        winnings = player.wealth - initial_wealth
+        winnings = player.wealth - initial_wealth   # Changing balance information
         if winnings > 0:
             print(f"{player.name} won {format(winnings, '.2f')}$ in this round.")
         elif winnings < 0:
@@ -567,7 +574,7 @@ class Roulette:
         print(f"{player.name}'s current balance is {format(player.wealth, '.2f')}$.")
 
     
-    def play(self, player, first_time=True):
+    def play(self, player, first_time=True): # Main Roulette game loop
         if first_time:
             self.print_rules()
         else:
@@ -581,7 +588,7 @@ class Roulette:
         print("Spinning", end="", flush=True) # Using flush to immediatly output string to terminal
         for _ in range(3):
             print(".", end="", flush=True) # Using flush again to immediatly output string to terminal
-            time.sleep(1)
+            time.sleep(1) # Create delay in output for visual effect
         print()
 
         self.spin_wheel()
@@ -602,7 +609,7 @@ class Roulette:
                 print("Invalid input. Please enter 'yes' or 'no'.")
 
 
-
+#6: Create Slotmachine class: Includes all necessary game data and mechanics
 class Slotmachine:
 
     def __init__(self):
@@ -672,13 +679,13 @@ class Slotmachine:
         # Check for diagonal wins
         if self.slot_grid[0][0] == self.slot_grid[1][1] == self.slot_grid[2][2] or \
            self.slot_grid[0][2] == self.slot_grid[1][1] == self.slot_grid[2][0]:
-            winnings = bet_amount * 5
+            winnings = bet_amount * 5 # Adjust Slotmachine payout ratio here
             player.wealth += winnings
             return winnings
 
         return False
     
-    def game_loop(self, player):
+    def game_loop(self, player): # Main Slotmachine game loop
         bet_amount = self.ask_bet_amount(player)
         while True:
             self.pulling_the_lever(player, bet_amount)

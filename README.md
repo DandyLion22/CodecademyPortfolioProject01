@@ -29,4 +29,5 @@ Contributing:
 License:
 
     A license has been added under a separate file: LICENSE (MIT license)
-    
+
+    [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
